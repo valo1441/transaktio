@@ -1,0 +1,236 @@
+# CURSOR RULES FOR SHADCN UI COMPONENT USAGE
+
+## PROJECT CONTEXT
+This is a Next.js project (Transaktio) using TypeScript, Tailwind CSS, and Shadcn UI v4 components.
+The project has access to Shadcn UI MCP server for component discovery and implementation guidance.
+
+---
+
+## 1. COMPONENT DISCOVERY & DEMONSTRATION
+
+### MANDATORY WORKFLOW:
+- **ALWAYS** use the Shadcn UI MCP server when working with UI components
+- **BEFORE** implementing any UI component, first call `mcp_shadcn-ui_get_component_demo` to see real working examples
+- **SHOW** the user both basic and advanced usage patterns from the demos
+- **DEMONSTRATE** component usage with actual code examples before implementation
+
+### Component Discovery Process:
+1. When user requests a component or UI feature:
+   - First check available components using `mcp_shadcn-ui_list_components`
+   - Search for appropriate components that match the requirement
+   - Get component demos using `mcp_shadcn-ui_get_component_demo`
+   - Review component metadata using `mcp_shadcn-ui_get_component_metadata`
+   - Show examples to the user before implementing
+
+2. For complex UI patterns (pages, forms, layouts):
+   - Check available blocks using `mcp_shadcn-ui_list_blocks`
+   - Use complete blocks (e.g., login-02, dashboard-01, calendar-01) when applicable
+   - Get block source code using `mcp_shadcn-ui_get_block` with `includeComponents: true`
+
+---
+
+## 2. PLANNING PHASE
+
+### MCP Server Integration in Planning:
+- **ALWAYS** use the MCP server during the planning phase for any Shadcn UI-related work
+- **SEARCH** for appropriate components before proposing implementation
+- **CONSIDER** component combinations and patterns from the MCP server
+- **EVALUATE** whether to use individual components or complete blocks
+
+### Planning Checklist:
+- [ ] Check MCP server for relevant components/blocks
+- [ ] Review component demos and usage patterns
+- [ ] Identify component combinations needed
+- [ ] Determine if a complete block is more appropriate than individual components
+- [ ] Plan component integration with existing codebase
+
+---
+
+## 3. IMPLEMENTATION STRATEGY
+
+### Component Application Rules:
+- **APPLY** Shadcn components wherever UI components are applicable
+- **USE** whole component blocks where possible (login pages, calendars, dashboards, sidebars)
+- **FOLLOW** demonstrated usage patterns exactly as shown in MCP server examples
+- **MAINTAIN** consistency with Shadcn UI design patterns
+
+### Implementation Priority:
+1. **First Choice**: Use complete Shadcn UI blocks for full-page components
+2. **Second Choice**: Use individual Shadcn UI components
+3. **Last Resort**: Build custom components only if Shadcn UI doesn't provide suitable options
+
+### Code Implementation:
+- Copy component source code from MCP server using `mcp_shadcn-ui_get_component`
+- Follow the exact structure and patterns from component demos
+- Maintain proper TypeScript types and imports
+- Ensure Tailwind CSS classes match Shadcn UI patterns
+- Use proper component composition as demonstrated
+
+---
+
+## 4. WORKFLOW EXECUTION
+
+### Standard Implementation Workflow:
+
+#### Step 1: Discovery
+```
+1. User requests UI component/feature
+2. Call MCP server to list/search components
+3. Get component demos to understand usage
+4. Present options to user if multiple components fit
+```
+
+#### Step 2: Demonstration
+```
+1. Show component demo code from MCP server
+2. Explain component props and usage patterns
+3. Demonstrate both basic and advanced examples
+4. Show how it integrates with the project
+```
+
+#### Step 3: Implementation
+```
+1. Get component source code from MCP server
+2. Implement exactly as demonstrated in examples
+3. Adapt to project structure (Next.js app directory)
+4. Ensure proper imports and dependencies
+5. Test component functionality
+```
+
+#### Step 4: Integration
+```
+1. Integrate with existing project code
+2. Maintain consistent styling and theming
+3. Ensure proper TypeScript types
+4. Verify Tailwind CSS configuration compatibility
+```
+
+---
+
+## 5. CONTEXT MANAGEMENT
+
+### Component Awareness:
+- **MAINTAIN** context about which Shadcn UI components are available
+- **REMEMBER** component usage patterns across the project
+- **TRACK** which components have been implemented
+- **APPLY** consistent styling and theming throughout
+
+### Consistency Rules:
+- Use the same component variants consistently across the project
+- Maintain uniform spacing, sizing, and styling patterns
+- Follow Shadcn UI design system principles
+- Ensure dark mode compatibility where applicable
+
+### Project-Specific Context:
+- This is a Next.js 16 project using the App Router
+- TypeScript is required for all components
+- Tailwind CSS v4 is configured
+- Components should be placed in appropriate directories within `src/app` or `src/components`
+
+---
+
+## 6. SPECIFIC INSTRUCTIONS
+
+### Component Selection:
+- **ALWAYS** check for Shadcn UI components before building custom solutions
+- **PREFER** Shadcn UI components over custom implementations
+- **USE** the MCP server as the primary source of truth for component usage
+- **IMPLEMENT** components exactly as demonstrated in the examples
+
+### Block Usage:
+- **PREFER** complete component blocks over individual elements when building:
+  - Authentication pages (login, signup, etc.)
+  - Dashboard layouts
+  - Calendar interfaces
+  - Sidebar navigation
+  - Product listings
+  - Form interfaces
+
+### Code Quality:
+- Ensure all components are properly typed with TypeScript
+- Follow Next.js best practices for component structure
+- Maintain accessibility standards (ARIA labels, keyboard navigation)
+- Ensure responsive design compatibility
+- Test dark mode support where applicable
+
+### File Organization:
+- Place Shadcn UI components in `src/components/ui/` directory
+- Follow the standard Shadcn UI component structure
+- Keep component files organized and well-documented
+- Maintain proper import paths
+
+---
+
+## 7. ERROR HANDLING & FALLBACKS
+
+### When Components Don't Exist:
+- If a component doesn't exist in Shadcn UI, inform the user
+- Suggest alternative components that might work
+- Only build custom components if absolutely necessary
+- Document why a custom solution was chosen
+
+### When MCP Server is Unavailable:
+- Inform the user that MCP server access is needed
+- Suggest manual component installation from Shadcn UI docs
+- Provide guidance on component structure based on Shadcn UI patterns
+
+---
+
+## 8. BEST PRACTICES
+
+### Component Usage:
+- Use `cn()` utility (from `tailwind-merge` and `clsx`) for className merging
+- Follow Shadcn UI variant patterns using `class-variance-authority`
+- Use `lucide-react` for icons (already in dependencies)
+- Leverage `framer-motion` for animations when needed
+
+### Styling:
+- Follow Tailwind CSS utility-first approach
+- Use Shadcn UI design tokens and CSS variables
+- Maintain consistent color scheme and spacing
+- Ensure proper dark mode implementation
+
+### Performance:
+- Use Next.js Image component for images
+- Implement proper code splitting
+- Optimize component imports
+- Consider server components vs client components appropriately
+
+---
+
+## REMINDERS
+
+- **NEVER** implement UI components without first checking Shadcn UI MCP server
+- **ALWAYS** show component demos before implementation
+- **PREFER** complete blocks over individual components for full-page features
+- **FOLLOW** demonstrated patterns exactly
+- **MAINTAIN** consistency across the project
+- **USE** MCP server as the single source of truth for Shadcn UI usage
+
+---
+
+## QUICK REFERENCE
+
+### MCP Server Functions Available:
+- `mcp_shadcn-ui_list_components` - List all available components
+- `mcp_shadcn-ui_get_component` - Get component source code
+- `mcp_shadcn-ui_get_component_demo` - Get component usage examples
+- `mcp_shadcn-ui_get_component_metadata` - Get component information
+- `mcp_shadcn-ui_list_blocks` - List available component blocks
+- `mcp_shadcn-ui_get_block` - Get complete block source code
+- `mcp_shadcn-ui_get_directory_structure` - Explore repository structure
+
+### Common Use Cases:
+- **Forms**: Use form components (input, select, checkbox, etc.)
+- **Navigation**: Use navigation components or sidebar blocks
+- **Data Display**: Use table, card, or list components
+- **Feedback**: Use alert, toast, or dialog components
+- **Layout**: Use complete dashboard or layout blocks
+- **Authentication**: Use login/signup blocks
+
+---
+
+**Last Updated**: Rules established for Transaktio project
+**Version**: 1.0
+**Shadcn UI Version**: v4
+
