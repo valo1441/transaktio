@@ -65,7 +65,7 @@ export function Hero() {
               className="h-14 px-10 text-lg shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer"
               onClick={handleWhitelistClick}
             >
-              Ilmoittaudu beta-versioon
+              Liity ensimmäisten joukossa - katso hyödyt
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </ButtonPulse>

@@ -1,0 +1,103 @@
+<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" width="40" height="40">
+  <defs>
+    <filter id="glow-purple">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="glow-blue">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="glow-teal">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="shadow-purple">
+      <feDropShadow dx="0" dy="0" stdDeviation="2" flood-color="rgba(139, 92, 246, 0.5)"/>
+    </filter>
+    <filter id="shadow-blue">
+      <feDropShadow dx="0" dy="0" stdDeviation="2" flood-color="rgba(59, 130, 246, 0.5)"/>
+    </filter>
+    <filter id="shadow-teal">
+      <feDropShadow dx="0" dy="0" stdDeviation="2" flood-color="rgba(20, 184, 166, 0.5)"/>
+    </filter>
+  </defs>
+  
+  <!-- Circle (Sphere) - Left -->
+  <g>
+    <!-- Outer glow -->
+    <circle
+      cx="12"
+      cy="20"
+      r="8"
+      fill="rgba(139, 92, 246, 0.3)"
+      filter="url(#glow-purple)"
+    />
+    <!-- Main circle -->
+    <circle
+      cx="12"
+      cy="20"
+      r="6"
+      fill="rgba(139, 92, 246, 0.9)"
+      filter="url(#shadow-purple)"
+    />
+    <!-- Inner highlight -->
+    <circle
+      cx="10.2"
+      cy="18.2"
+      r="2.4"
+      fill="rgba(255, 255, 255, 0.3)"
+    />
+  </g>
+
+  <!-- Hexagon - Center -->
+  <g>
+    <!-- Outer glow -->
+    <polygon
+      points="20,12 24.5,15 24.5,21 20,24 15.5,21 15.5,15"
+      fill="rgba(59, 130, 246, 0.3)"
+      filter="url(#glow-blue)"
+    />
+    <!-- Main hexagon -->
+    <polygon
+      points="20,13 23.5,15.5 23.5,20.5 20,23 16.5,20.5 16.5,15.5"
+      fill="rgba(59, 130, 246, 0.9)"
+      filter="url(#shadow-blue)"
+    />
+    <!-- Inner highlight -->
+    <polygon
+      points="19.2,14.2 21.5,15.5 21.5,18.5 19.2,19.8 16.9,18.5 16.9,15.5"
+      fill="rgba(255, 255, 255, 0.3)"
+    />
+  </g>
+
+  <!-- Diamond (Square rotated 45°) - Right -->
+  <g>
+    <!-- Outer glow -->
+    <polygon
+      points="28,20 32,20 30,24 30,16"
+      fill="rgba(20, 184, 166, 0.3)"
+      filter="url(#glow-teal)"
+    />
+    <!-- Main diamond -->
+    <polygon
+      points="28,20 31,20 29.5,23 29.5,17"
+      fill="rgba(20, 184, 166, 0.9)"
+      filter="url(#shadow-teal)"
+    />
+    <!-- Inner highlight -->
+    <polygon
+      points="27.8,19.2 30.2,19.2 29,21.2 29,17.2"
+      fill="rgba(255, 255, 255, 0.3)"
+    />
+  </g>
+</svg>
