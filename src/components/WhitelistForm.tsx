@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,11 +14,114 @@ import {
   Calendar,
   Settings,
   Lock,
-  ArrowRight
+  ArrowRight,
+  AlertCircle,
+  Copy
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+
+interface FormData {
+  name: string;
+  email: string;
+  companyName: string;
+  message: string;
+}
 
 export function WhitelistForm() {
+  const [formData, setFormData] = useState<FormData>({
+    name: "",
+    email: "",
+    companyName: "",
+    message: "",
+  });
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [showFallback, setShowFallback] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleInputChange = (field: keyof FormData, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    setError(null);
+  };
+
+  const formatEmailBody = (data: FormData): string => {
+    return `Whitelist Application Submission
+
+Name: ${data.name || "Not provided"}
+Email: ${data.email || "Not provided"}
+Company Name: ${data.companyName || "Not provided"}
+
+Message:
+${data.message || "No additional message provided"}
+
+---
+Submitted via Transaktio Whitelist Form`;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setShowFallback(false);
+
+    // Basic validation
+    if (!formData.email) {
+      setError("Sähköpostiosoite on pakollinen");
+      return;
+    }
+
+    // Format email content
+    const subject = encodeURIComponent("Whitelist Application");
+    const body = encodeURIComponent(formatEmailBody(formData));
+    const recipient = "whitelist@transakt.io";
+    
+    // Create mailto link
+    const mailtoLink = `mailto:${recipient}?subject=${subject}&body=${body}`;
+
+    // Try to open email client
+    try {
+      window.location.href = mailtoLink;
+      
+      // Show success message after a short delay
+      // Note: We can't reliably detect if email client opened, so we assume success
+      setTimeout(() => {
+        setIsSubmitted(true);
+        // Reset form after showing success
+        setTimeout(() => {
+          setFormData({
+            name: "",
+            email: "",
+            companyName: "",
+            message: "",
+          });
+          setIsSubmitted(false);
+        }, 5000);
+      }, 500);
+    } catch (err) {
+      setError("Sähköpostiohjelman avaaminen epäonnistui. Kopioi tiedot alla olevasta tekstistä.");
+      setShowFallback(true);
+    }
+  };
+
+  const copyToClipboard = async () => {
+    const emailContent = `To: whitelist@transakt.io\nSubject: Whitelist Application\n\n${formatEmailBody(formData)}`;
+    
+    try {
+      await navigator.clipboard.writeText(emailContent);
+      setShowFallback(false);
+      setIsSubmitted(true);
+      setTimeout(() => {
+        setFormData({
+          name: "",
+          email: "",
+          companyName: "",
+          message: "",
+        });
+        setIsSubmitted(false);
+      }, 5000);
+    } catch (err) {
+      setError("Kopiointi epäonnistui. Kopioi tiedot manuaalisesti.");
+    }
+  };
+
   return (
     // IMPORTANT: Ensure this div is the main container and has the ID
     <div id="whitelist-form" className="whitelist-form-container">
@@ -38,38 +142,156 @@ export function WhitelistForm() {
                 </p>
               </CardHeader>
               <CardContent className="pb-8">
-                <form className="flex flex-col gap-4 sm:flex-row">
-                  <motion.div
-                    className="flex-1"
-                    whileFocus={{ scale: 1.02 }}
-                  >
-                    <Input
-                      type="email"
-                      placeholder="Sähköpostiosoite"
-                      className="h-12 text-base bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
-                      required
-                    />
-                  </motion.div>
-                  <ButtonPulse>
-                    <Button 
-                      type="submit" 
-                      size="lg" 
-                      className="whitespace-nowrap h-12 px-8 w-full sm:w-auto transition-all duration-300
-                        bg-gradient-to-r from-primary to-primary/80
-                        hover:from-primary/90 hover:to-primary/70
-                        shadow-lg hover:shadow-xl hover:shadow-primary/50"
+                <AnimatePresence mode="wait">
+                  {isSubmitted ? (
+                    <motion.div
+                      key="success"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      className="text-center py-8"
                     >
-                      <motion.span
-                        className="flex items-center gap-2"
-                        whileHover={{ x: 2 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                        className="inline-block mb-4"
                       >
-                        Liity odotuslistalle
-                        <ArrowRight className="h-4 w-4" />
-                      </motion.span>
-                    </Button>
-                  </ButtonPulse>
-                </form>
+                        <CheckCircle className="h-16 w-16 text-green-400" />
+                      </motion.div>
+                      <h3 className="text-2xl font-semibold text-white mb-2">
+                        Kiitos hakemuksestasi!
+                      </h3>
+                      <p className="text-gray-400">
+                        Olemme vastaanottaneet hakemuksesi. Olemme yhteydessä pian.
+                      </p>
+                    </motion.div>
+                  ) : (
+                    <motion.form
+                      key="form"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      onSubmit={handleSubmit}
+                      className="space-y-4"
+                    >
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <motion.div
+                          whileFocus={{ scale: 1.02 }}
+                          className="md:col-span-2"
+                        >
+                          <Input
+                            type="text"
+                            placeholder="Nimi *"
+                            value={formData.name}
+                            onChange={(e) => handleInputChange("name", e.target.value)}
+                            className="h-12 text-base bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
+                            required
+                          />
+                        </motion.div>
+                        <motion.div
+                          whileFocus={{ scale: 1.02 }}
+                        >
+                          <Input
+                            type="email"
+                            placeholder="Sähköpostiosoite *"
+                            value={formData.email}
+                            onChange={(e) => handleInputChange("email", e.target.value)}
+                            className="h-12 text-base bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
+                            required
+                          />
+                        </motion.div>
+                        <motion.div
+                          whileFocus={{ scale: 1.02 }}
+                        >
+                          <Input
+                            type="text"
+                            placeholder="Yrityksen nimi (valinnainen)"
+                            value={formData.companyName}
+                            onChange={(e) => handleInputChange("companyName", e.target.value)}
+                            className="h-12 text-base bg-slate-700 border-slate-600 text-white placeholder:text-gray-400"
+                          />
+                        </motion.div>
+                        <motion.div
+                          whileFocus={{ scale: 1.02 }}
+                          className="md:col-span-2"
+                        >
+                          <textarea
+                            placeholder="Lisätietoja (valinnainen)"
+                            value={formData.message}
+                            onChange={(e) => handleInputChange("message", e.target.value)}
+                            rows={4}
+                            className="w-full h-24 px-3 py-2 text-base bg-slate-700 border border-slate-600 rounded-md text-white placeholder:text-gray-400
+                              focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary
+                              transition-all duration-300 resize-none"
+                          />
+                        </motion.div>
+                      </div>
+
+                      {error && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/30 rounded-md text-red-400 text-sm"
+                        >
+                          <AlertCircle className="h-4 w-4" />
+                          <span>{error}</span>
+                        </motion.div>
+                      )}
+
+                      {showFallback && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="p-4 bg-slate-700/50 border border-slate-600 rounded-md space-y-3"
+                        >
+                          <p className="text-sm text-gray-300">
+                            Sähköpostiohjelma ei avautunut. Kopioi alla olevat tiedot ja lähetä ne manuaalisesti osoitteeseen{" "}
+                            <span className="text-primary font-mono">whitelist@transakt.io</span>
+                          </p>
+                          <div className="flex gap-2">
+                            <Button
+                              type="button"
+                              onClick={copyToClipboard}
+                              variant="outline"
+                              className="flex-1"
+                            >
+                              <Copy className="h-4 w-4 mr-2" />
+                              Kopioi tiedot
+                            </Button>
+                            <Button
+                              type="button"
+                              onClick={() => setShowFallback(false)}
+                              variant="ghost"
+                            >
+                              Sulje
+                            </Button>
+                          </div>
+                        </motion.div>
+                      )}
+
+                      <ButtonPulse>
+                        <Button 
+                          type="submit" 
+                          size="lg" 
+                          className="w-full h-12 px-8 transition-all duration-300
+                            bg-gradient-to-r from-primary to-primary/80
+                            hover:from-primary/90 hover:to-primary/70
+                            shadow-lg hover:shadow-xl hover:shadow-primary/50"
+                        >
+                          <motion.span
+                            className="flex items-center gap-2"
+                            whileHover={{ x: 2 }}
+                            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                          >
+                            Lähetä hakemus
+                            <ArrowRight className="h-4 w-4" />
+                          </motion.span>
+                        </Button>
+                      </ButtonPulse>
+                    </motion.form>
+                  )}
+                </AnimatePresence>
                 <motion.p
                   className="text-center text-gray-400 text-sm mt-4"
                   initial={{ opacity: 0, y: 10 }}

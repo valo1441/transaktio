@@ -19,6 +19,33 @@ export function Hero() {
 
   return (
     <section className="relative flex min-h-screen flex-col items-center justify-center px-4 py-16 sm:py-24 md:py-32 text-center overflow-hidden z-10">
+      {/* X Logo - Top Right */}
+      <motion.a
+        href="https://x.com/Transaktio"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Follow Transaktio on X"
+        className="absolute top-4 right-4 sm:top-6 sm:right-6 md:top-8 md:right-8 z-30 p-2 rounded-full bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 hover:border-primary/50 transition-colors duration-300 group"
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.5, duration: 0.5 }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        <svg
+          className="h-6 w-6 text-gray-300 group-hover:text-white transition-colors duration-300"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <path
+            d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+            fill="currentColor"
+          />
+        </svg>
+      </motion.a>
+
       <motion.div 
         className="relative mx-auto max-w-5xl space-y-6 sm:space-y-8 md:space-y-10 z-20"
         initial={{ opacity: 0 }}
