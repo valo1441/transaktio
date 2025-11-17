@@ -21,8 +21,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Transaktio - Transaction Manager",
-  description: "Manage your transactions with ease",
+  title: "Transaktio - Kryptomaksut Suomen Yrityksille | Maksupalvelu Tulevaisuudesta",
+  description: "Transaktio auttaa suomalaisia yrityksiä vastaanottamaan kryptomaksuja ilman teknistä osaamista. Vastaanota maksuja, saat euroja pankkiisi. Liity odotuslistalle.",
+  keywords: "kryptomaksut, kryptovaluutta, maksupalvelu, suomalaiset yritykset, bitcoin maksut, ethereum",
+  openGraph: {
+    title: "Transaktio - Kryptomaksut Suomen Yrityksille",
+    description: "Vastaanota kryptomaksuja, saat euroja pankkiisi. Ei teknistä osaamista tarvita.",
+    type: "website",
+  },
   icons: {
     icon: "/favicon.ico",
   },
@@ -38,7 +44,7 @@ export default async function RootLayout({
   const isHomePage = pathname === "/";
 
   return (
-    <html lang="en" className="dark">
+    <html lang="fi" className="dark">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
