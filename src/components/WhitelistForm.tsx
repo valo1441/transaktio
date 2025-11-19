@@ -16,7 +16,7 @@ import {
   Lock,
   ArrowRight,
   AlertCircle,
-  Copy
+  Loader2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -35,7 +35,7 @@ export function WhitelistForm() {
     message: "",
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [showFallback, setShowFallback] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleInputChange = (field: keyof FormData, value: string) => {
@@ -43,46 +43,56 @@ export function WhitelistForm() {
     setError(null);
   };
 
-  const formatEmailBody = (data: FormData): string => {
-    return `Whitelist Application Submission
-
-Name: ${data.name || "Not provided"}
-Email: ${data.email || "Not provided"}
-Company Name: ${data.companyName || "Not provided"}
-
-Message:
-${data.message || "No additional message provided"}
-
----
-Submitted via Transaktio Whitelist Form`;
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
-    setShowFallback(false);
+    setIsSubmitting(true);
 
     // Basic validation
     if (!formData.email) {
       setError("Sähköpostiosoite on pakollinen");
+      setIsSubmitting(false);
       return;
     }
 
-    // Format email content
-    const subject = encodeURIComponent("Whitelist Application");
-    const body = encodeURIComponent(formatEmailBody(formData));
-    const recipient = "whitelist@transakt.io";
-    
-    // Create mailto link
-    const mailtoLink = `mailto:${recipient}?subject=${subject}&body=${body}`;
+    if (!formData.name) {
+      setError("Nimi on pakollinen");
+      setIsSubmitting(false);
+      return;
+    }
 
-    // Try to open email client
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError("Anna kelvollinen sähköpostiosoite");
+      setIsSubmitting(false);
+      return;
+    }
+
+    // FormSubmit.co will handle the submission
+    // We'll use fetch to submit the form data
+    const form = e.currentTarget;
+    const formDataObj = new FormData(form);
+    
+    // Add hidden fields for FormSubmit.co customization
+    formDataObj.append("_subject", "Whitelist Application - Transaktio");
+    formDataObj.append("_template", "box");
+    formDataObj.append("_captcha", "false");
+    formDataObj.append("_next", window.location.href); // Stay on same page after submission
+
     try {
-      window.location.href = mailtoLink;
-      
-      // Show success message after a short delay
-      // Note: We can't reliably detect if email client opened, so we assume success
-      setTimeout(() => {
+      const response = await fetch("https://formsubmit.co/ajax/transaktio.whitelist@gmail.com", {
+        method: "POST",
+        body: formDataObj,
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Success - Email sent
         setIsSubmitted(true);
         // Reset form after showing success
         setTimeout(() => {
@@ -94,33 +104,19 @@ Submitted via Transaktio Whitelist Form`;
           });
           setIsSubmitted(false);
         }, 5000);
-      }, 500);
+      } else {
+        throw new Error(data.message || "Email sending failed");
+      }
     } catch (err) {
-      setError("Sähköpostiohjelman avaaminen epäonnistui. Kopioi tiedot alla olevasta tekstistä.");
-      setShowFallback(true);
+      console.error("FormSubmit Error:", err);
+      setError(
+        "Lähetys epäonnistui. Yritä uudelleen tai ota yhteyttä suoraan osoitteeseen transaktio.whitelist@gmail.com"
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const copyToClipboard = async () => {
-    const emailContent = `To: whitelist@transakt.io\nSubject: Whitelist Application\n\n${formatEmailBody(formData)}`;
-    
-    try {
-      await navigator.clipboard.writeText(emailContent);
-      setShowFallback(false);
-      setIsSubmitted(true);
-      setTimeout(() => {
-        setFormData({
-          name: "",
-          email: "",
-          companyName: "",
-          message: "",
-        });
-        setIsSubmitted(false);
-      }, 5000);
-    } catch (err) {
-      setError("Kopiointi epäonnistui. Kopioi tiedot manuaalisesti.");
-    }
-  };
 
   return (
     // IMPORTANT: Ensure this div is the main container and has the ID
@@ -182,6 +178,7 @@ Submitted via Transaktio Whitelist Form`;
                         >
                           <Input
                             type="text"
+                            name="name"
                             placeholder="Nimi *"
                             value={formData.name}
                             onChange={(e) => handleInputChange("name", e.target.value)}
@@ -194,6 +191,7 @@ Submitted via Transaktio Whitelist Form`;
                         >
                           <Input
                             type="email"
+                            name="email"
                             placeholder="Sähköpostiosoite *"
                             value={formData.email}
                             onChange={(e) => handleInputChange("email", e.target.value)}
@@ -206,6 +204,7 @@ Submitted via Transaktio Whitelist Form`;
                         >
                           <Input
                             type="text"
+                            name="companyName"
                             placeholder="Yrityksen nimi (valinnainen)"
                             value={formData.companyName}
                             onChange={(e) => handleInputChange("companyName", e.target.value)}
@@ -217,6 +216,7 @@ Submitted via Transaktio Whitelist Form`;
                           className="md:col-span-2"
                         >
                           <textarea
+                            name="message"
                             placeholder="Lisätietoja (valinnainen)"
                             value={formData.message}
                             onChange={(e) => handleInputChange("message", e.target.value)}
@@ -239,53 +239,34 @@ Submitted via Transaktio Whitelist Form`;
                         </motion.div>
                       )}
 
-                      {showFallback && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="p-4 bg-slate-700/50 border border-slate-600 rounded-md space-y-3"
-                        >
-                          <p className="text-sm text-gray-300">
-                            Sähköpostiohjelma ei avautunut. Kopioi alla olevat tiedot ja lähetä ne manuaalisesti osoitteeseen{" "}
-                            <span className="text-primary font-mono">whitelist@transakt.io</span>
-                          </p>
-                          <div className="flex gap-2">
-                            <Button
-                              type="button"
-                              onClick={copyToClipboard}
-                              variant="outline"
-                              className="flex-1"
-                            >
-                              <Copy className="h-4 w-4 mr-2" />
-                              Kopioi tiedot
-                            </Button>
-                            <Button
-                              type="button"
-                              onClick={() => setShowFallback(false)}
-                              variant="ghost"
-                            >
-                              Sulje
-                            </Button>
-                          </div>
-                        </motion.div>
-                      )}
 
                       <ButtonPulse>
                         <Button 
                           type="submit" 
                           size="lg" 
+                          disabled={isSubmitting}
                           className="w-full h-12 px-8 transition-all duration-300
                             bg-gradient-to-r from-primary to-primary/80
                             hover:from-primary/90 hover:to-primary/70
-                            shadow-lg hover:shadow-xl hover:shadow-primary/50"
+                            shadow-lg hover:shadow-xl hover:shadow-primary/50
+                            disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <motion.span
                             className="flex items-center gap-2"
-                            whileHover={{ x: 2 }}
+                            whileHover={{ x: isSubmitting ? 0 : 2 }}
                             transition={{ type: "spring", stiffness: 400, damping: 10 }}
                           >
-                            Lähetä hakemus
-                            <ArrowRight className="h-4 w-4" />
+                            {isSubmitting ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Lähetetään...
+                              </>
+                            ) : (
+                              <>
+                                Lähetä hakemus
+                                <ArrowRight className="h-4 w-4" />
+                              </>
+                            )}
                           </motion.span>
                         </Button>
                       </ButtonPulse>
