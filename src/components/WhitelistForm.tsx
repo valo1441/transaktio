@@ -70,14 +70,15 @@ export function WhitelistForm() {
     }
 
     // FormSubmit.co AJAX implementation
-    // Prepare FormData with all form fields
-    const formDataObj = new FormData();
+    // Use the actual form element for better mobile/iOS compatibility
+    const form = e.currentTarget;
+    const formDataObj = new FormData(form);
     
-    // Add all form fields with proper name attributes
-    formDataObj.append("name", formData.name);
-    formDataObj.append("email", formData.email); // Required for Reply-To functionality
-    formDataObj.append("companyName", formData.companyName || "");
-    formDataObj.append("message", formData.message || "");
+    // Ensure all fields are included (mobile browsers may not include empty fields)
+    if (!formDataObj.has("name")) formDataObj.append("name", formData.name);
+    if (!formDataObj.has("email")) formDataObj.append("email", formData.email);
+    if (!formDataObj.has("companyName")) formDataObj.append("companyName", formData.companyName || "");
+    if (!formDataObj.has("message")) formDataObj.append("message", formData.message || "");
 
     // Hidden configuration fields for FormSubmit.co
     formDataObj.append("_subject", "Whitelist Application - Transaktio");
@@ -88,9 +89,12 @@ export function WhitelistForm() {
 
     try {
       // Submit via AJAX to FormSubmit.co endpoint
+      // Don't set Content-Type header - let browser set it with boundary for FormData
       const response = await fetch("https://formsubmit.co/ajax/transaktio.whitelist@gmail.com", {
         method: "POST",
         body: formDataObj,
+        // Don't set Content-Type - browser will set it automatically with boundary
+        // This is important for mobile/iOS compatibility
         headers: {
           Accept: "application/json",
         },
@@ -104,16 +108,26 @@ export function WhitelistForm() {
       const data = await response.json();
 
       // Check for activation message first (FormSubmit.co returns this even with success: false)
-      const responseMessage = data.message || "";
+      const responseMessage = (data.message || "").toLowerCase();
       const needsActivation = 
-        responseMessage.toLowerCase().includes("activate") ||
-        responseMessage.toLowerCase().includes("activation") ||
-        responseMessage.toLowerCase().includes("confirmation") ||
-        responseMessage.toLowerCase().includes("sent you an email");
+        responseMessage.includes("activate") ||
+        responseMessage.includes("activation") ||
+        responseMessage.includes("confirmation") ||
+        responseMessage.includes("sent you an email");
 
       if (needsActivation) {
         setError(
           "Sähköpostiosoite vaatii aktivointia. Tarkista transaktio.whitelist@gmail.com -postilaatikko (myös roskapostikansio) aktivointilinkkiä varten. Klikkaa linkkiä ja lähetä lomake uudelleen."
+        );
+        return;
+      }
+
+      // Check for unsuccessful submission message
+      if (responseMessage.includes("unsuccesfully") || responseMessage.includes("unsuccessfully")) {
+        // This might be a mobile/iOS specific issue - try alternative approach
+        console.warn("FormSubmit returned unsuccessful - may need activation or have mobile compatibility issue");
+        setError(
+          "Lähetys epäonnistui. Tarkista että sähköpostiosoite on aktivoitu. Jos ongelma jatkuu, ota yhteyttä suoraan osoitteeseen transaktio.whitelist@gmail.com"
         );
         return;
       }
@@ -134,8 +148,19 @@ export function WhitelistForm() {
           setIsSubmitted(false);
         }, 5000);
       } else {
+        // Check if there's a specific error message
+        const errorMsg = data.message || "Email sending failed";
+        
+        // Handle "unsuccessfully" message specifically
+        if (errorMsg.toLowerCase().includes("unsuccesfully") || errorMsg.toLowerCase().includes("unsuccessfully")) {
+          setError(
+            "Lähetys epäonnistui. Tarkista että sähköpostiosoite on aktivoitu FormSubmit.co:ssa. Jos ongelma jatkuu, ota yhteyttä suoraan osoitteeseen transaktio.whitelist@gmail.com"
+          );
+          return;
+        }
+        
         // Other error cases
-        throw new Error(data.message || "Email sending failed");
+        throw new Error(errorMsg);
       }
     } catch (err: any) {
       console.error("FormSubmit.co Error:", err);
@@ -143,21 +168,32 @@ export function WhitelistForm() {
         message: err.message,
         status: err.status,
         response: err.response,
+        userAgent: navigator.userAgent,
       });
       
+      const errorMessage = (err.message || "").toLowerCase();
+      
       // Provide specific error messages based on error type
-      if (err.message?.includes("Failed to fetch") || err.message?.includes("NetworkError")) {
+      if (errorMessage.includes("failed to fetch") || errorMessage.includes("networkerror") || errorMessage.includes("network request failed")) {
         setError(
           "Verkkoyhteys epäonnistui. Tarkista internetyhteytesi ja yritä uudelleen."
         );
-      } else if (err.message?.includes("activate") || err.message?.includes("confirmation")) {
+      } else if (errorMessage.includes("activate") || errorMessage.includes("confirmation") || errorMessage.includes("unsuccesfully") || errorMessage.includes("unsuccessfully")) {
         setError(
-          "Sähköpostiosoite vaatii aktivointia. Tarkista transaktio.whitelist@gmail.com -postilaatikko aktivointilinkkiä varten."
+          "Sähköpostiosoite vaatii aktivointia. Tarkista transaktio.whitelist@gmail.com -postilaatikko (myös roskapostikansio) aktivointilinkkiä varten. Klikkaa linkkiä ja lähetä lomake uudelleen."
         );
       } else {
-        setError(
-          `Lähetys epäonnistui: ${err.message || "Tuntematon virhe"}. Yritä uudelleen tai ota yhteyttä suoraan osoitteeseen transaktio.whitelist@gmail.com`
-        );
+        // For mobile devices, provide more helpful error message
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (isMobile) {
+          setError(
+            "Lähetys epäonnistui mobiililaitteella. Varmista että sähköpostiosoite on aktivoitu FormSubmit.co:ssa. Jos ongelma jatkuu, ota yhteyttä suoraan osoitteeseen transaktio.whitelist@gmail.com"
+          );
+        } else {
+          setError(
+            `Lähetys epäonnistui: ${err.message || "Tuntematon virhe"}. Yritä uudelleen tai ota yhteyttä suoraan osoitteeseen transaktio.whitelist@gmail.com`
+          );
+        }
       }
     } finally {
       setIsSubmitting(false);
